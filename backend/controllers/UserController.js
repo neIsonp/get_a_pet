@@ -146,20 +146,54 @@ module.exports = class UserController {
             { name: confirmpassword, message: 'Please confirm the passoword' },
         ];
 
+        const userExists = await User.findOne({ email: email });
+
         for (const field of fields) {
             if (!field.name) {
                 return res.status(422).json({ message: field.message });
             }
-        }
 
-        const userExists = await User.findOne({ email: email });
-
-        if (user.email !== email && userExists) {
-            return res.status(422).json({
-                message: 'Please, choose a diffent email!',
-            });
+            if (field.name == email) {
+                if (user.email !== email && userExists) {
+                    return res.status(422).json({
+                        message: 'Please, choose a diffent email!',
+                    });
+                }
+            }
         }
 
         user.email = email;
+        user.phone = phone;
+
+        if (password != confirmpassword) {
+            return res.status(422).json({
+                message: 'the password and confirm password must be the same'
+            })
+        } else if (password == confirmpassword && password != null) {
+
+            const salt = await bcrypt.genSalt(12);
+            const passwordHashed = await bcrypt.hash(password, salt);
+
+            user.password = passwordHashed;
+        }
+
+
+        try {
+
+            await User.findOneAndUpdate(
+                { _id: user.id },
+                { $set: user },
+                { new: true },
+            );
+
+            return res.status(200).json({
+                message: 'User Successfully updated'
+            });
+
+        } catch (error) {
+            res.status(500).json({
+                message: err,
+            });
+        }
     }
 }
