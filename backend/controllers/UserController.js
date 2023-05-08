@@ -4,6 +4,7 @@ const jwt = require('jsonwebtoken');
 
 const createuserToken = require('../helpers/create-user-token');
 const getToken = require('../helpers/get-token');
+const getuserByToken = require('../helpers/get-user-by-token');
 
 module.exports = class UserController {
 
@@ -127,8 +128,38 @@ module.exports = class UserController {
     }
 
     static async editUser(req, res) {
-        return res.status(200).json({
-            message: 'Successfully updated!'
-        });
+
+        const id = req.params.id;
+
+        const token = getToken(req);
+        const user = await getuserByToken(token);
+
+        const { name, email, phone, password, confirmpassword } = req.body;
+
+        let image = '';
+
+        const fields = [
+            { name: name, message: 'Please insert the name' },
+            { name: email, message: 'Please insert the email' },
+            { name: phone, message: 'Please insert the phone' },
+            { name: password, message: 'Please insert the password' },
+            { name: confirmpassword, message: 'Please confirm the passoword' },
+        ];
+
+        for (const field of fields) {
+            if (!field.name) {
+                return res.status(422).json({ message: field.message });
+            }
+        }
+
+        const userExists = await User.findOne({ email: email });
+
+        if (user.email !== email && userExists) {
+            return res.status(422).json({
+                message: 'Please, choose a diffent email!',
+            });
+        }
+
+        user.email = email;
     }
 }
