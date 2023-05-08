@@ -97,9 +97,7 @@ module.exports = class UserController {
             const token = getToken(req);
             const decoded = jwt.verify(token, "nossoSecret");
 
-            currentUser = await User.findById(decoded.id);
-
-            currentUser.password = undefined;
+            currentUser = await User.findById(decoded.id).select('-password');
 
         } else {
             currentUser = null;
@@ -107,4 +105,25 @@ module.exports = class UserController {
 
         res.status(200).send(currentUser);
     }
+
+    static async getUserById(req, res) {
+
+        const id = req.params.id;
+
+        try {
+            const user = await User.findById(id).select("-password");
+
+            if (!user) {
+                return res.status(422).json({
+                    message: 'User not found!',
+                });
+            }
+            res.status(200).json({ user });
+
+        } catch (err) {
+            console.error(err);
+            res.status(500).json({ message: 'Internal server error' });
+        }
+    }
+
 }
