@@ -18,7 +18,6 @@ const checkToken = (req, res, next) => {
     }
 
     try {
-
         const verified = jwt.verify(token, 'nossoSecret');
         req.user = verified;
         next();
