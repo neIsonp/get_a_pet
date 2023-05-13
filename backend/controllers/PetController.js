@@ -2,6 +2,7 @@ const Pet = require('../models/Pet');
 
 const getToken = require('../helpers/get-token');
 const getUserByToken = require('../helpers/get-user-by-token');
+const getuserByToken = require('../helpers/get-user-by-token');
 const ObjectId = require('mongoose').Types.ObjectId;
 
 
@@ -140,4 +141,32 @@ module.exports = class PetController {
             message: 'Pet Successfully deleted'
         })
     }
+
+    static async updatePet(req, res) {
+        const id = req.params.id;
+        const { name, age, weight, color } = req.body;
+        const images = req.files;
+
+        const updateData = { name, age, weight, color, images: images.map(image => image.filename) };
+
+        const pet = await Pet.findOne({ _id: id });
+        if (!pet) return res.status(404).json({ message: 'Pet doesnt exist' });
+
+        const token = getToken(req);
+        const user = await getuserByToken(token);
+        if (pet.user._id.toString() !== user._id.toString()) return res.status(422).json({ message: 'There was a problem processing your request, please try again later.' });
+
+        if (!name) return res.status(422).json({ message: 'O nome é obrigatório!' });
+        if (!age) return res.status(422).json({ message: 'A idade é obrigatória!' });
+        if (!weight) return res.status(422).json({ message: 'O peso é obrigatório!' });
+        if (!color) return res.status(422).json({ message: 'A cor é obrigatória!' });
+        if (images.length === 0) return res.status(422).json({ message: 'A imagem é obrigatória!' });
+
+        await Pet.findByIdAndUpdate(id, updateData);
+
+        res.status(200).json({
+            message: 'Pet successfully updated'
+        })
+    }
+
 }
