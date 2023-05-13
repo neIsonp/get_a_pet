@@ -136,14 +136,14 @@ module.exports = class UserController {
 
         const { name, email, phone, password, confirmpassword } = req.body;
 
-        let image = '';
+        if (req.file) {
+            user.image = req.file.filename;
+        }
 
         const fields = [
             { name: name, message: 'Please insert the name' },
             { name: email, message: 'Please insert the email' },
             { name: phone, message: 'Please insert the phone' },
-            { name: password, message: 'Please insert the password' },
-            { name: confirmpassword, message: 'Please confirm the passoword' },
         ];
 
         const userExists = await User.findOne({ email: email });
@@ -164,24 +164,24 @@ module.exports = class UserController {
 
         user.email = email;
         user.phone = phone;
+        user.name = name;
 
         if (password != confirmpassword) {
             return res.status(422).json({
                 message: 'the password and confirm password must be the same'
             })
-        } else if (password == confirmpassword && password != null) {
 
+        } else if (password == confirmpassword && password != null) {
             const salt = await bcrypt.genSalt(12);
             const passwordHashed = await bcrypt.hash(password, salt);
 
             user.password = passwordHashed;
         }
 
-
         try {
 
             await User.findOneAndUpdate(
-                { _id: user.id },
+                { _id: user._id },
                 { $set: user },
                 { new: true },
             );
