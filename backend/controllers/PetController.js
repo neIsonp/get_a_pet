@@ -12,6 +12,9 @@ module.exports = class PetController {
 
         //images uplaod
 
+        const images = req.files;
+
+        console.log(images);
 
         //validation
 
@@ -24,8 +27,12 @@ module.exports = class PetController {
 
         for (const field of fields) {
             if (!field.name) {
-                return res.json({ message: field.message });
+                return res.status(422).json({ message: field.message });
             }
+        }
+
+        if (images.length === 0) {
+            return res.status(422).json({ message: "The image is required" });
         }
 
         //get pet owner
@@ -43,6 +50,8 @@ module.exports = class PetController {
                 phone: user.phone,
             }
         });
+
+        images.map((image) => pet.images.push(image.filename));
 
         try {
 
