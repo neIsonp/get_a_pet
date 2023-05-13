@@ -14,8 +14,6 @@ module.exports = class PetController {
 
         const images = req.files;
 
-        console.log(images);
-
         //validation
 
         const fields = [
@@ -72,6 +70,17 @@ module.exports = class PetController {
 
         res.status(200).json({
             pets: pets
+        })
+    }
+
+    static async getAllUserPets(req, res) {
+        const token = getToken(req);
+        const user = await getUserByToken(token);
+
+        const pets = await Pet.find({ 'user._id': user._id }).sort('-createAt');
+
+        res.status(200).json({
+            pets: pets,
         })
     }
 
