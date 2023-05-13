@@ -156,17 +156,84 @@ module.exports = class PetController {
         const user = await getuserByToken(token);
         if (pet.user._id.toString() !== user._id.toString()) return res.status(422).json({ message: 'There was a problem processing your request, please try again later.' });
 
-        if (!name) return res.status(422).json({ message: 'O nome é obrigatório!' });
-        if (!age) return res.status(422).json({ message: 'A idade é obrigatória!' });
-        if (!weight) return res.status(422).json({ message: 'O peso é obrigatório!' });
-        if (!color) return res.status(422).json({ message: 'A cor é obrigatória!' });
-        if (images.length === 0) return res.status(422).json({ message: 'A imagem é obrigatória!' });
+        if (!name) return res.status(422).json({ message: 'The name is required!' });
+        if (!age) return res.status(422).json({ message: 'The age is required!!' });
+        if (!weight) return res.status(422).json({ message: 'The weight is required!' });
+        if (!color) return res.status(422).json({ message: 'The color is required!' });
+        if (images.length === 0) return res.status(422).json({ message: 'The color is required!' });
 
         await Pet.findByIdAndUpdate(id, updateData);
 
         res.status(200).json({
             message: 'Pet successfully updated'
         })
+    }
+
+    static async schedule(req, res) {
+        const id = req.params.id;
+
+        const pet = await Pet.findOne({ _id: id });
+
+        if (!pet) {
+            return res.status(404).json({ message: 'Pet doesnt exist' })
+        }
+
+        const token = getToken(req);
+        const user = await getUserByToken(token);
+
+        if (pet.user._id.equals(user._id)) {
+            return res.status(422).json({ message: 'you cannot schedule a visit with your own pet' });
+        }
+
+        if (pet.adopter) {
+            if (pet.adopter._id.equals(user._id)) {
+                return res.status(422).json({ message: 'you already scheduled a visit for this pet!' });
+            }
+        }
+
+        pet.adopter = {
+            _id: user._id,
+            name: user.name,
+            image: user.image,
+        }
+
+        await Pet.findByIdAndUpdate(id, pet);
+
+        res.status(200).json({
+            message: `the visit was successfully scheduled, contact ${pet.user.name} by phone ${pet.user.phone}`
+        })
+    }
+
+    static async concludeAdoption(req, res) {
+        const id = req.params.id;
+
+        if (!ObjectId.isValid(id)) {
+            return res.status(422).json({ message: 'Invalid id' });
+        }
+
+        const pet = await Pet.findOne({ _id: id });
+
+        if (!pet) {
+            return res.status(404).json({ message: 'Pet doesnt exist' })
+        }
+
+        const token = getToken(req);
+        const user = await getUserByToken(token);
+
+        if (pet.user._id.toString() !== user._id.toString()) {
+            return res.status(422).json({ message: 'There was a problem processing your request, please try again later.' });
+        }
+
+        pet.available = false;
+
+        await Pet.findByIdAndUpdate(id, pet);
+
+        res.status(200).json({
+            message: 'congratulations the adoption cycle was carried out successfully!'
+        })
+
+
+
     }
 
 }
