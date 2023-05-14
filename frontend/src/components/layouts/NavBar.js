@@ -9,6 +9,7 @@ export default function Navbar() {
         <nav className={styles.navbar}>
             <div className={styles.navbar_logo}>
                 <img src={Logo} alt="Logo pet" />
+                <h2>Get A Pet</h2>
             </div>
             <ul>
                 <li>
