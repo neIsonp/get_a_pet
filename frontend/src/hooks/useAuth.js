@@ -3,6 +3,7 @@ import api from "../utils/api";
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import useFlashMessage from "./useFlashMessage";
+import axios from "axios";
 
 export default function useAuth() {
   const { setFlashMessage } = useFlashMessage();
@@ -51,6 +52,24 @@ export default function useAuth() {
     navigate("/");
   }
 
+  async function login(user) {
+    let msgText = "Successfully logged";
+    let msgType = "success";
+
+    try {
+      const data = await api.post("/users/login", user).then((response) => {
+        return response.data;
+      });
+
+      await authUser(data);
+    } catch (error) {
+      msgText = error.response.data.message;
+      msgType = "error";
+    }
+
+    setFlashMessage(msgText, msgType);
+  }
+
   function logout() {
     const msgText = "Successfully logout!";
     const msgType = "success";
@@ -64,5 +83,5 @@ export default function useAuth() {
     setFlashMessage(msgText, msgType);
   }
 
-  return { authenticated, register, logout };
+  return { authenticated, register, logout, login };
 }
