@@ -8,7 +8,7 @@ import { Context } from "../../context/UserContext";
 import { useContext } from "react";
 
 export default function Navbar() {
-  const { authenticated } = useContext(Context);
+  const { authenticated, logout } = useContext(Context);
 
   return (
     <nav className={styles.navbar}>
@@ -22,7 +22,7 @@ export default function Navbar() {
         </li>
         {authenticated ? (
           <>
-            <p>Logged</p>
+            <li onClick={logout}>Logout</li>
           </>
         ) : (
           <>
