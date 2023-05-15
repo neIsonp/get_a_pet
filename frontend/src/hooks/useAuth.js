@@ -19,6 +19,5 @@ export default function useAuth() {
             console.log(error);
         }
     }
-
     return { register };
 }

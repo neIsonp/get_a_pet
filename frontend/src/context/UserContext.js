@@ -12,6 +12,7 @@ function UserProvider({ children }) {
             {children}
         </Context.Provider>
     );
+
 }
 
 export { Context, UserProvider }
