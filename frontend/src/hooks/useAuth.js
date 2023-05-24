@@ -66,7 +66,6 @@ export default function useAuth() {
       msgText = error.response.data.message;
       msgType = "error";
     }
-
     setFlashMessage(msgText, msgType);
   }
 
