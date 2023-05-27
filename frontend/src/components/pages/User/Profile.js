@@ -70,7 +70,6 @@ export default function Profile() {
       )}
       </div>
       <form onSubmit={handleSubmit} className={formStyles.form_container}>
-
         <Input
         text="Image"
         type="file"
